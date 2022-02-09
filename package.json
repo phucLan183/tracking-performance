@@ -1,0 +1,32 @@
+{
+  "name": "tracking-performance",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "test": "ts-node src/web3/index.ts",
+    "build": "rm -rf dist && tsc",
+    "dep": "docker-compose -f docker-compose.yml up --build -d",
+    "dep:log": "docker-compose -f docker-compose.yml up --build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^17.0.8",
+    "apollo-server": "^3.6.1",
+    "apollo-server-core": "^3.6.1",
+    "bn.js": "^5.2.0",
+    "cron": "^1.8.2",
+    "dotenv": "^10.0.0",
+    "graphql": "^16.2.0",
+    "mongodb": "^4.2.2",
+    "typescript": "^4.5.4",
+    "web3": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/cron": "^1.7.3"
+  }
+}
