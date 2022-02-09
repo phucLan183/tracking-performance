@@ -1,8 +1,8 @@
 version: '3.7'
 
 services:
-  boilerplate-apollo:
-    container_name: boilerplate-apollo
+  tracking-performance:
+    container_name: tracking-performance
     build:
       context: .
       dockerfile: Dockerfile
