@@ -10,7 +10,7 @@ import { OrderDayStatistic } from './cron';
     await connectMongo(MONGO_URI)
     connectWeb3(WEB3_PROVIDER)
     await startApolloServer(PORT)
-    // await intervalConsume(START_BLOCK)
+    await intervalConsume(START_BLOCK)
     // OrderDayStatistic()
   } catch (error) {
     console.log(error);
