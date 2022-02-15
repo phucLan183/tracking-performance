@@ -1,37 +1,30 @@
-import { IndexDescription } from "mongodb";
+import { IndexDescription, Decimal128 } from "mongodb";
 
-export interface OrderCreate {
-  blockId: number
+export interface Market {
+  blockId: string
   blockNumber: number
   orderId: number
-  contractNft: string
-  currency: string
-  creator: string
-  timestamp: number
-  nftId: number
-  timeEnd: number
-  currentPrice: number
-  spotPrice: number
-}
-
-export interface OrderConfirmed {
-  blockNumber: number
-  orderId: number
-  buyer: string
-  price: number
-  fee: number
-  timestamp: number
-}
-
-export interface OrderCancel {
-  blockNumber: number
-  orderId: number
-  timestamp: number
+  typeBox: string
+  event: string
+  timestamp: Date
+  contractNft?: string
+  currency?: Decimal128
+  creator?: string
+  nftId?: number
+  timeEnd?: Date
+  currentPrice?: Decimal128
+  spotPrice?: Decimal128
+  buyer?: string
+  price?: Decimal128
+  fee?: Decimal128
+  bidder?: string
 }
 
 export const MarketIndexes: IndexDescription[] = [
   { key: { blockId: 1 }, unique: true, background: true },
   { key: { blockNumber: 1 }, background: true },
+  { key: { event: 1 }, background: true },
+  { key: { typeBox: 1 }, background: true },
   { key: { orderId: 1 }, background: true },
   { key: { timestamp: 1 }, background: true },
 ]

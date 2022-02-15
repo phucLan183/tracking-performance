@@ -1,10 +1,10 @@
-import { MongoClient, ReadPreference } from "mongodb";
-import { MarketIndexes } from './models/Market';
+import { MongoClient, ReadPreference, Collection } from "mongodb";
+import { MarketIndexes, Market } from './models/Market';
 
 export let mongoClient: MongoClient
 
 // Export collection
-export let Market: any
+export let MarketCollection: Collection<Market>
 export let MarketStatistic: any
 
 export const connectMongo = async (MONGO_URI: any) => {
@@ -39,10 +39,10 @@ export const connectMongo = async (MONGO_URI: any) => {
     const db = mongoClient.db()
     
     // Connect collection
-    Market = db.collection('market-mainnet')
+    MarketCollection = db.collection('market-mainnet')
     MarketStatistic = db.collection('market-statistic')
     await Promise.all([
-      Market.createIndexes(MarketIndexes),
+      MarketCollection.createIndexes(MarketIndexes),
     ])
     console.log('💾 Connected successfully to mongodb');
   } catch (error) {

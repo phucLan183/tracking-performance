@@ -1,11 +1,11 @@
-import { Market, mongoClient } from '../database/mongodb';
+import { MarketCollection, mongoClient } from '../database/mongodb';
 import { Decimal128 } from 'mongodb';
-import { MarketContract, Box1Contract, Box2Contract} from '../web3'
-import { ADDRESS_BOX1, ADDRESS_BOX2} from '../config';
+import { MarketContract, Box1Contract, Box2Contract } from '../web3'
+import { ADDRESS_BOX1, ADDRESS_BOX2 } from '../config';
 
 const getTypeBox = async (contractNft: string, nftId: string) => {
   let typeBox: any
-  switch(contractNft) {
+  switch (contractNft) {
     case ADDRESS_BOX1: {
       typeBox = await Box1Contract.methods.boxDetails(Number(nftId)).call()
       break
@@ -36,9 +36,9 @@ export const getOrderCreate = async (options: any) => {
         const typeBox = await getTypeBox(event.returnValues.contractNft, event.returnValues.nftId)
         await session.withTransaction(async () => {
           const timeEnd = Number(event.returnValues.timeEnd)
-          const CheckDataOrder = await Market.findOne({ blockId: event["id"] })
+          const CheckDataOrder = await MarketCollection.findOne({ blockId: event["id"] })
           if (!CheckDataOrder && typeBox) {
-            await Market.insertOne({
+            await MarketCollection.insertOne({
               blockId: event["id"],
               blockNumber: event.blockNumber,
               event: event.event,
@@ -77,14 +77,14 @@ export const getOrderConfirmed = async (options: any) => {
     if (orderConfirmedEvent.length > 0) {
       for (const event of orderConfirmedEvent) {
         await session.withTransaction(async () => {
-          const CheckDataOrder = await Market.findOne({ blockId: event["id"] })
-          const dataCreate = await Market.findOne({ event: "OrderCreate", orderId: event.returnValues.orderId })
-          if (!CheckDataOrder && dataCreate) {
-            await Market.insertOne({
+          const CheckDataOrder = await MarketCollection.findOne({ blockId: event["id"] })
+          if (!CheckDataOrder) {
+            const dataCreate = await MarketCollection.findOne({ event: "OrderCreate", orderId: event.returnValues.orderId })
+            await MarketCollection.insertOne({
               blockId: event["id"],
               blockNumber: event.blockNumber,
               event: event.event,
-              typeBox: dataCreate.typeBox,
+              typeBox: dataCreate!.typeBox,
               orderId: event.returnValues.orderId,
               buyer: event.returnValues.buyer,
               price: new Decimal128(event.returnValues.price),
@@ -115,11 +115,13 @@ export const getOrderCancel = async (options: any) => {
     if (orderCancelEvent.length > 0) {
       for (const event of orderCancelEvent) {
         await session.withTransaction(async () => {
-          const CheckDataOrder = await Market.findOne({ blockId: event["id"] })
+          const CheckDataOrder = await MarketCollection.findOne({ blockId: event["id"] })
           if (!CheckDataOrder) {
-            await Market.insertOne({
+            const dataCreate = await MarketCollection.findOne({ event: "OrderCreate", orderId: event.returnValues.orderId })
+            await MarketCollection.insertOne({
               blockId: event["id"],
               blockNumber: event.blockNumber,
+              typeBox: dataCreate!.typeBox,
               event: event.event,
               orderId: event.returnValues.orderId,
               timestamp: new Date(event.returnValues.timestamp * 1000),
@@ -148,12 +150,14 @@ export const getBidEvent = async (options: any) => {
     if (bidEvent.length > 0) {
       for (const event of bidEvent) {
         await session.withTransaction(async () => {
-          const dataBid = await Market.findOne({ blockId: event["id"] })
+          const dataBid = await MarketCollection.findOne({ blockId: event["id"] })
           if (!dataBid) {
-            await Market.insertOne({
+            const dataCreate = await MarketCollection.findOne({ event: "OrderCreate", orderId: event.returnValues.orderId })
+            await MarketCollection.insertOne({
               blockId: event["id"],
               blockNumber: event.blockNumber,
               event: event.event,
+              typeBox: dataCreate!.typeBox,
               bidder: event.returnValues.bidder,
               timestamp: new Date(Number(event.returnValues.timestamp * 1000)),
               orderId: event.returnValues.orderId,

@@ -1,13 +1,19 @@
-import { Market } from '../../../database/mongodb';
+import { MarketCollection } from '../../../database/mongodb';
 import Web3 from 'web3-utils';
 import BN from 'bn.js';
+
+const typeBox = {
+  gold: '0',
+  platinum: '1',
+  diamond: '2'
+}
 
 export const getBoxAlreadySold = async (parent: any, args: any) => {
   try {
     const { day, month, year } = args
     const date = new Date(year, month - 1, day, 7)
     const tomorrow = new Date(date.getTime() + 24 * 60 * 60 * 1000)
-    const dataComfirmed = await Market.find({
+    const dataComfirmed = await MarketCollection.find({
       event: "OrderConfirmed",
       timestamp: {
         $gte: date,
@@ -17,9 +23,9 @@ export const getBoxAlreadySold = async (parent: any, args: any) => {
 
     return {
       totalBox: dataComfirmed.length,
-      goldBox: dataComfirmed.filter((item: any) => item.typeBox === '0').length,
-      platiumBox: dataComfirmed.filter((item: any) => item.typeBox === '1').length,
-      diamondBox: dataComfirmed.filter((item: any) => item.typeBox === '2').length,
+      goldBox: FilterDataTypeBox(dataComfirmed, typeBox.gold),
+      platiumBox: FilterDataTypeBox(dataComfirmed, typeBox.platinum),
+      diamondBox: FilterDataTypeBox(dataComfirmed, typeBox.diamond),
     }
   } catch (error) {
     throw error
@@ -28,10 +34,10 @@ export const getBoxAlreadySold = async (parent: any, args: any) => {
 
 export const getSubmitSellOrder = async (parent: any, args: any) => {
   try {
-    const { address, day, month, year } = args
+    const { day, month, year } = args
     const date = new Date(year, month - 1, day, 7)
     const tomorrow = new Date(date.getTime() + 24 * 60 * 60 * 1000)
-    const dataMarket = await Market.find({
+    const dataMarket = await MarketCollection.find({
       event: "OrderCreate",
       timestamp: {
         $gte: date,
@@ -40,10 +46,10 @@ export const getSubmitSellOrder = async (parent: any, args: any) => {
     }).toArray()
 
     return {
-      totalSubmitBox: dataMarket.length,
-      goldSubmitBox: dataMarket.filter((data: any) => data.typeBox === '0').length,
-      platiumSubmitBox: dataMarket.filter((data: any) => data.typeBox === '1').length,
-      diamondSubmitBox: dataMarket.filter((data: any) => data.typeBox === '2').length
+      totalBox: dataMarket.length,
+      goldBox: FilterDataTypeBox(dataMarket, typeBox.gold),
+      platiumBox: FilterDataTypeBox(dataMarket, typeBox.platinum),
+      diamondBox: FilterDataTypeBox(dataMarket, typeBox.diamond)
     }
   } catch (error) {
     throw error
@@ -55,19 +61,19 @@ export const getMarketCap = async (parent: any, args: any) => {
     const { day, month, year } = args
     const date = new Date(year, month - 1, day, 7)
     const tomorrow = new Date(date.getTime() + 24 * 60 * 60 * 1000)
-    const dataComfirmed = await Market.find({
+    const dataComfirmed = await MarketCollection.find({
       event: "OrderConfirmed",
       timestamp: {
         $gte: date,
         $lt: tomorrow
       }
     }).toArray()
-    
+
     return {
-      totalMarketCap: TotalBalance(dataComfirmed),
-      goldBox: TotalBalance(dataComfirmed.filter((data: any) => data.typeBox === '0')),
-      platiumBox: TotalBalance(dataComfirmed.filter((data: any) => data.typeBox === '1')),
-      diamondBox: TotalBalance(dataComfirmed.filter((data: any) => data.typeBox === '2')),
+      totalBox: TotalBalance(dataComfirmed),
+      goldBox: TotalBalance(dataComfirmed.filter((data: any) => data.typeBox === typeBox.gold)),
+      platiumBox: TotalBalance(dataComfirmed.filter((data: any) => data.typeBox === typeBox.platinum)),
+      diamondBox: TotalBalance(dataComfirmed.filter((data: any) => data.typeBox === typeBox.diamond)),
     }
   } catch (error) {
     throw error
@@ -75,9 +81,14 @@ export const getMarketCap = async (parent: any, args: any) => {
 }
 
 const TotalBalance = (dataBlock: any) => {
-  if (dataBlock.length === 0) return 0 
+  if (dataBlock.length === 0) return 0
   const data = dataBlock.map((item: any) => item.price.toString())
   const totalData = data.reduce((pre: any, cur: any) => new BN(pre).add(new BN(cur)), 0)
   const formatted = Web3.fromWei(totalData, "ether")
-  return formatted
+  return Number(formatted)
+}
+
+const FilterDataTypeBox = (data: any, box: string) => {
+  const dataBox = data.filter((data: any) => data.typeBox === box).length
+  return dataBox
 }
