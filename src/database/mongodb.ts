@@ -39,7 +39,7 @@ export const connectMongo = async (MONGO_URI: any) => {
     const db = mongoClient.db()
     
     // Connect collection
-    MarketCollection = db.collection('market-mainnet')
+    MarketCollection = db.collection('market-mainnet-v2')
     MarketStatistic = db.collection('market-statistic')
     await Promise.all([
       MarketCollection.createIndexes(MarketIndexes),

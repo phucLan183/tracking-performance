@@ -36,7 +36,7 @@ export const getOrderCreate = async (options: any) => {
         const typeBox = await getTypeBox(event.returnValues.contractNft, event.returnValues.nftId)
         await session.withTransaction(async () => {
           const timeEnd = Number(event.returnValues.timeEnd)
-          const CheckDataOrder = await MarketCollection.findOne({ blockId: event["id"] })
+          const CheckDataOrder = await MarketCollection.findOne({ blockId: event["id"] }, { session })
           if (!CheckDataOrder && typeBox) {
             await MarketCollection.insertOne({
               blockId: event["id"],
@@ -77,7 +77,7 @@ export const getOrderConfirmed = async (options: any) => {
     if (orderConfirmedEvent.length > 0) {
       for (const event of orderConfirmedEvent) {
         await session.withTransaction(async () => {
-          const CheckDataOrder = await MarketCollection.findOne({ blockId: event["id"] })
+          const CheckDataOrder = await MarketCollection.findOne({ blockId: event["id"] }, { session })
           if (!CheckDataOrder) {
             const dataCreate = await MarketCollection.findOne({ event: "OrderCreate", orderId: event.returnValues.orderId })
             await MarketCollection.insertOne({
@@ -115,7 +115,7 @@ export const getOrderCancel = async (options: any) => {
     if (orderCancelEvent.length > 0) {
       for (const event of orderCancelEvent) {
         await session.withTransaction(async () => {
-          const CheckDataOrder = await MarketCollection.findOne({ blockId: event["id"] })
+          const CheckDataOrder = await MarketCollection.findOne({ blockId: event["id"] }, { session })
           if (!CheckDataOrder) {
             const dataCreate = await MarketCollection.findOne({ event: "OrderCreate", orderId: event.returnValues.orderId })
             await MarketCollection.insertOne({
@@ -150,7 +150,7 @@ export const getBidEvent = async (options: any) => {
     if (bidEvent.length > 0) {
       for (const event of bidEvent) {
         await session.withTransaction(async () => {
-          const dataBid = await MarketCollection.findOne({ blockId: event["id"] })
+          const dataBid = await MarketCollection.findOne({ blockId: event["id"] }, { session })
           if (!dataBid) {
             const dataCreate = await MarketCollection.findOne({ event: "OrderCreate", orderId: event.returnValues.orderId })
             await MarketCollection.insertOne({
